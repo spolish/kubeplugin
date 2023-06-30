@@ -5,13 +5,18 @@ RESOURCE_TYPE=$1
 NAMESPACE=$2
 
 # Retrieve resource usage statistics from Kubernetes
-kubectl get $RESOURCE_TYPE -n $NAMESPACE | tail -n +2 | while read line
-do
-  # Extract CPU and memory usage from the output
-  NAME=$(echo $line | awk '{print $1}')
-  CPU=$(echo $line | awk '{print $2}')
-  MEMORY=$(echo $line | awk '{print $3}')
+kubectl get $RESOURCE_TYPE -n $NAMESPACE | tail -n +2 | {
+  # Print header row
+  printf "%-10s %-15s %-40s %-10s %-10s\n" "Resource" "Namespace" "Name" "CPU" "Memory"
 
-  # Output the statistics to the console
-  echo "Resource: $RESOURCE_TYPE, Namespace: $NAMESPACE, Name: $NAME, CPU: $CPU, Memory: $MEMORY"
-done
+  # Read each line and print formatted output
+  while read -r line; do
+    # Extract CPU and memory usage from the output
+    NAME=$(echo "$line" | awk '{print $1}')
+    CPU=$(echo "$line" | awk '{print $2}')
+    MEMORY=$(echo "$line" | awk '{print $3}')
+
+    # Output the statistics in formatted table format
+    printf "%-10s %-15s %-40s %-10s %-10s\n" "$RESOURCE_TYPE" "$NAMESPACE" "$NAME" "$CPU" "$MEMORY"
+  done
+}
